@@ -13,7 +13,7 @@ Running the solution. cd to the root folder
 3) Run docker-compose up -d
 4) Run npm install
 5) Run 'npm run consume' to start the consumer service (it will run it in loop mode waiting for new items in queue in loop)
-6) Run 'npm run publish -- <SOME CITY NAME>' in order to request, process and publish city streets to queue
+6) Run "npm run publish -- 'SOME CITY NAME'" in order to request, process and publish city streets to queue
 7) Unit tests can be run using 'npm run test'
 8) End-to-end test can be run as 'npm run e2e-test'. During the test, mock data will be 'requested' using StreetServiceMock, 
     it will be inserted into queue and mongoDb. After that, monogoDb assertion will be performed. 
