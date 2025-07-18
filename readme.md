@@ -10,7 +10,7 @@ API_CALL_BULK_SIZE environment variable was added to configure page size for str
 Running the solution. cd to the root folder
 1) Clone the repository: 'git clone https://github.com/mkopylenko/dataloop-ai.git' 
 2) Checkout 'master' branch: git checkout master
-3) Run docker-compose up
+3) Run docker-compose up -d
 4) Run npm install
 5) Run 'npm run consume' to start the consumer service (it will run it in loop mode waiting for new items in queue in loop)
 6) Run 'npm run publish -- <SOME CITY NAME>' in order to request, process and publish city streets to queue
