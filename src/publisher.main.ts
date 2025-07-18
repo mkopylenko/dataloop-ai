@@ -4,11 +4,9 @@ import {PublishingService} from './services/publisher.service';
 import { cities, city, enlishNameByCity } from './cities/cities';
 import { StreetsService } from "./services/streets.service";
 const path = require('path')
-require('dotenv').config({ path: path.resolve(__dirname, '.env') })
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
 async function main() {
-
-    // Publish streets data to RabbitMQ for a specific city
     const cityVal:any = process.argv[2];
 
     if (!cityVal) {

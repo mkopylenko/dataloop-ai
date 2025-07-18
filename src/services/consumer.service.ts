@@ -35,7 +35,7 @@ export class ConsumerService {
             }
 
             try {
-                console.log('Saving streets to database:', streetsJson);
+                console.log(`Saving streets to database: ${streetsJson.length} streets`);
                 await database.saveStreets(streetsJson);
             } catch (error) {
                 console.error('Failed to save streets to database:', error);

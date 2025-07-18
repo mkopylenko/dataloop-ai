@@ -11,10 +11,8 @@ class RabbitMq implements Queue
         const { channel, queue, conn } = await this.prepareQueue();
 
         try{
-            await channel.sendToQueue(queue, Buffer.from(JSON.stringify(streets)));
-
+            channel.sendToQueue(queue, Buffer.from(JSON.stringify(streets)));
             console.log('Number of streets published to RabbitMQ:', streets.length);
-
         } catch (error) {
             console.error('Error publishing to RabbitMQ:', error);
         }
@@ -65,7 +63,6 @@ class RabbitMq implements Queue
         finally{
             await channel.close()
             await conn.close()
-
         }
         return '';
     }

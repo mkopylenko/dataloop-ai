@@ -6,28 +6,51 @@ import * as _ from 'lodash';
 export class PublishingService {
     static async publish(city: city, queue: Queue, streetsService: StreetsService) {
         try {
-            const streetsData = await streetsService.getStreetsInCity(city);
+            const publishingBulkSize = Number(process.env.PUBLISHING_BULK_SIZE) || 2000;
+            const apiCallBulkSize = Number(process.env.API_CALL_BULK_SIZE) || 1000;
+            let offset = 0;
+            let bulkCount = 1;
 
-            const bulkSize = Number(process.env.PUBLISHING_BULK_SIZE) || 1000;
-            const chunks = _.chunk(streetsData.streets, bulkSize);
-            console.log(`Number of streets in ${city}: ${streetsData.streets.length}, number of chunks: ${chunks.length}`)
+            while (true) {
+                const { streets, hasMore, nextOffset } = await streetsService.getStreetsInCity(city, offset, apiCallBulkSize);
 
+                if (streets.length === 0) {
+                    console.log(`No streets returned for bulk ${bulkCount}. Exiting.`);
+                    break;
+                }
 
-            await Promise.all(
-                chunks.map(async (chunk, index) => {
-                    try {
-                        const streetIds = chunk.map(item => item.streetId);
-                        const streetsInfo = await streetsService.getStreetInfoById(streetIds);
-                        queue.publishToQueue(streetsInfo);
-                        console.log(`Chunk ${index + 1} published successfully.`);
-                    } catch (err) {
-                        console.error(`Error processing chunk ${index + 1}:`, err);
-                    }
-                })
-            );
+                console.log(`Processing bulk #${bulkCount} with ${streets.length} street IDs`);
+
+                try {
+                    const streetIds = streets.map(s => s.streetId);
+
+                    const chunks = _.chunk(streetIds, publishingBulkSize);
+
+                    await Promise.all(
+                        chunks.map(async (ids, i) => {
+                            try {
+                                const streetsInfo = await streetsService.getStreetInfoById(ids);
+                                queue.publishToQueue(streetsInfo);
+                                console.log(`Published chunk ${bulkCount}.${i + 1}`);
+                            } catch (err) {
+                                console.error(`Failed to process chunk ${bulkCount}.${i + 1}:`, err);
+                            }
+                        })
+                    );
+                } catch (err) {
+                    console.error(`Error processing bulk #${bulkCount}:`, err);
+                }
+
+                if (!hasMore) {
+                    console.log(`All bulks processed for ${city}`);
+                    break;
+                }
+
+                offset = nextOffset;
+                bulkCount++;
+            }
         } catch (err) {
-            console.error('Failed to publish streets for city:', city, err);
+            console.error(`Failed to publish streets for city ${city}:`, err);
         }
     }
 }
-
