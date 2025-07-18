@@ -8,7 +8,7 @@ export class ConsumerService {
         this.keepRunning = false;
     }
 
-    async consumeAndSaveToDatabase(queue: Queue, database: Database, isRunInLoop: boolean) {
+    async consumeAndSaveToDatabase(queue: Queue, database: Database, isRunInLoop = false) {
         this.keepRunning = true;
 
         while (this.keepRunning) {
@@ -18,12 +18,20 @@ export class ConsumerService {
                 streetsData = await queue.consumeFromQueue();
             } catch (error) {
                 console.error('Error consuming from queue:', error);
-                continue;
+                if (isRunInLoop) {
+                    continue;
+                } else{
+                    break
+                }
             }
 
             if (!streetsData || streetsData === '') {
                 console.log('No more data in the queue.');
-                continue;
+                if (isRunInLoop) {
+                    continue;
+                } else{
+                    break
+                }
             }
 
             let streetsJson: any;
@@ -31,7 +39,11 @@ export class ConsumerService {
                 streetsJson = JSON.parse(streetsData);
             } catch (error) {
                 console.error('Failed to parse streets data:', error);
-                continue;
+                if (isRunInLoop) {
+                    continue;
+                } else{
+                    break
+                }
             }
 
             try {
