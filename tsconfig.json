@@ -25,6 +25,8 @@
   "compileOnSave": false,
   "include": [
     "src/**/*",
+    "node_modules/ts-jest/globals.d.ts",
+    "node_modules/ts-jest/globals.d.ts"
   ],
   "exclude": [
     "dist/**/*",

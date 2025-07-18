@@ -5,12 +5,17 @@ import MongoDb from './mongo-db';
 
 jest.mock('mongoose');
 
+
 describe('MongoDb', () => {
     let mongoDb: MongoDb;
     let mockBulkWrite: jest.Mock;
+    let mockFind: jest.Mock;
+    let mockDeleteMany: jest.Mock;
 
     const mockModel = {
-        bulkWrite: jest.fn()
+        bulkWrite: jest.fn(),
+        find: jest.fn(),
+        deleteMany:  jest.fn()
     };
 
     beforeEach(() => {
@@ -21,6 +26,8 @@ describe('MongoDb', () => {
 
         mongoDb = new MongoDb();
         mockBulkWrite = mockModel.bulkWrite as jest.Mock;
+        mockFind = mockModel.find as jest.Mock;
+        mockDeleteMany = mockModel.deleteMany as jest.Mock;
     });
 
     afterEach(() => {
@@ -77,5 +84,54 @@ describe('MongoDb', () => {
 
         expect(mockBulkWrite).toHaveBeenCalled();
         expect(mongoose.disconnect).toHaveBeenCalled();
+    });
+    describe('selectDataByField', () => {
+        it('should connect, query, and disconnect properly', async () => {
+            const expectedData = [
+                {
+                    streetId: 1,
+                    city_name: 'Test City',
+                },
+            ];
+            mockFind.mockResolvedValue(expectedData);
+
+            const result = await mongoDb.selectDataByField('streetId', 1);
+
+            expect(mongoose.connect).toHaveBeenCalled();
+            expect(mockFind).toHaveBeenCalledWith({ streetId: 1 });
+            expect(result).toEqual(expectedData);
+            expect(mongoose.disconnect).toHaveBeenCalled();
+        });
+
+        it('should return empty array on error', async () => {
+            mockFind.mockRejectedValue(new Error('find failed'));
+
+            const result = await mongoDb.selectDataByField('city_name', 'Missing City');
+
+            expect(result).toEqual([]);
+            expect(mongoose.disconnect).toHaveBeenCalled();
+        });
+    });
+
+    describe('deleteDataByField', () => {
+        it('should connect, delete, and disconnect properly', async () => {
+            const mockDeleteResult = { deletedCount: 2 };
+            mockDeleteMany.mockResolvedValue(mockDeleteResult);
+
+            await mongoDb.deleteDataByField('city_name', 'ToDelete');
+
+            expect(mongoose.connect).toHaveBeenCalled();
+            expect(mockDeleteMany).toHaveBeenCalledWith({ city_name: 'ToDelete' });
+            expect(mongoose.disconnect).toHaveBeenCalled();
+        });
+
+        it('should handle errors in delete', async () => {
+            mockDeleteMany.mockRejectedValue(new Error('delete failed'));
+
+            await mongoDb.deleteDataByField('region_name', 'Nowhere');
+
+            expect(mockDeleteMany).toHaveBeenCalled();
+            expect(mongoose.disconnect).toHaveBeenCalled();
+        });
     });
 });

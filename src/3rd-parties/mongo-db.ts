@@ -51,6 +51,30 @@ class MongoDb implements Database {
   private async connect() {
     await mongoose.connect(process.env.MONGO_URL ?? 'mongodb://localhost:27017/GEODB');
   }
+    async selectDataByField(fieldName: keyof IData, fieldValue: any): Promise<IData[]> {
+        try {
+            await this.connect();
+            return await this.DataModel.find({[fieldName]: fieldValue});
+        } catch (error) {
+            console.error(`Error selecting data by ${fieldName} from MongoDB:`, error);
+            return [];
+        } finally {
+            await mongoose.disconnect();
+        }
+    }
+
+
+    async deleteDataByField(fieldName: keyof IData, fieldValue: any) {
+        try {
+            await this.connect();
+            const result = await this.DataModel.deleteMany({ [fieldName]: fieldValue });
+            console.log(`Data deleted successfully by ${fieldName}:`, result);
+        } catch (error) {
+            console.error(`Error deleting data by ${fieldName} from MongoDB:`, error);
+        } finally {
+            await mongoose.disconnect();
+        }
+    }
 }
 
 export default MongoDb;
