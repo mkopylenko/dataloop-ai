@@ -10,7 +10,7 @@ const config: Config = {
     testMatch: ['**/*.spec.ts'],
     globals: {
         'ts-jest': {
-            tsconfig: '../tsconfig.json',
+            tsconfig: './tsconfig.json',
         },
     },
 };
