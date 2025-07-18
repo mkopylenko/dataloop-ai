@@ -37,11 +37,13 @@ class MongoDb implements Database {
         }
       }));
 
-      await this.DataModel.bulkWrite(upsertOperations);
-
-      console.log('Data saved successfully');
-
-   } catch (error) {
+      const result = await this.DataModel.bulkWrite(upsertOperations);
+         if (result.getWriteErrors()?.length > 0) {
+             console.error(`Failed to save streets, ${JSON.stringify(result.getWriteErrors())}`);
+         } else {
+            console.log('Data saved successfully');
+        }
+    } catch (error) {
       console.error('Error saving data to MongoDB:', error);
    } finally {
       await mongoose.disconnect();
@@ -51,18 +53,18 @@ class MongoDb implements Database {
   private async connect() {
     await mongoose.connect(process.env.MONGO_URL ?? 'mongodb://localhost:27017/GEODB');
   }
-    async selectDataByField(fieldName: keyof IData, fieldValue: any): Promise<IData[]> {
-        try {
-            await this.connect();
-            return await this.DataModel.find({[fieldName]: fieldValue});
-        } catch (error) {
-            console.error(`Error selecting data by ${fieldName} from MongoDB:`, error);
-            return [];
-        } finally {
-            await mongoose.disconnect();
-        }
-    }
 
+  async selectDataByField(fieldName: keyof IData, fieldValue: any): Promise<IData[]> {
+    try {
+        await this.connect();
+        return await this.DataModel.find({[fieldName]: fieldValue});
+    } catch (error) {
+        console.error(`Error selecting data by ${fieldName} from MongoDB:`, error);
+        return [];
+    } finally {
+        await mongoose.disconnect();
+    }
+  }
 
     async deleteDataByField(fieldName: keyof IData, fieldValue: any) {
         try {

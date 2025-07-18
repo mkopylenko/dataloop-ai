@@ -10,15 +10,18 @@ export class ConsumerService {
 
     async consumeAndSaveToDatabase(queue: Queue, database: Database, isRunInLoop = false) {
         this.keepRunning = true;
-
+        let backoffDelay = 1000;
+        const maxBackoffDelay = 16000;
         while (this.keepRunning) {
             let streetsData: string;
 
             try {
                 streetsData = await queue.consumeFromQueue();
             } catch (error) {
-                console.error('Error consuming from queue:', error);
                 if (isRunInLoop) {
+                    console.log(`Retrying in ${backoffDelay / 1000}s...`);
+                    await new Promise(resolve => setTimeout(resolve, backoffDelay));
+                    backoffDelay = Math.min(backoffDelay * 2, maxBackoffDelay);
                     continue;
                 } else{
                     break
