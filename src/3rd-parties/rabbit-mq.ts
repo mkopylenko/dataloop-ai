@@ -13,7 +13,7 @@ class RabbitMq implements Queue
         try{
             await channel.sendToQueue(queue, Buffer.from(JSON.stringify(streets)));
 
-            console.log('Published to RabbitMQ:', streets);
+            console.log('Number of streets published to RabbitMQ:', streets.length);
 
         } catch (error) {
             console.error('Error publishing to RabbitMQ:', error);

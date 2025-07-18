@@ -1,3 +1,4 @@
+#!/usr/bin/env ts-node
 import RabbitMq from "./3rd-parties/rabbit-mq";
 import {PublishingService} from './services/publisher.service';
 import { cities, city, enlishNameByCity } from './cities/cities';

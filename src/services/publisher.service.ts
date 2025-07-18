@@ -7,10 +7,11 @@ export class PublishingService {
     static async publish(city: city, queue: Queue, streetsService: StreetsService) {
         try {
             const streetsData = await streetsService.getStreetsInCity(city);
-            console.log(streetsData);
 
-            const bulkSize = Number(process.env.PUBLISHING_BULK_SIZE) || 50;
+            const bulkSize = Number(process.env.PUBLISHING_BULK_SIZE) || 1000;
             const chunks = _.chunk(streetsData.streets, bulkSize);
+            console.log(`Number of streets in ${city}: ${streetsData.streets.length}, number of chunks: ${chunks.length}`)
+
 
             await Promise.all(
                 chunks.map(async (chunk, index) => {
